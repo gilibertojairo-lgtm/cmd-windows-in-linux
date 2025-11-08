@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+import os
+import time
+import shutil  # para copy y move
+
+# Funciones para los comandos
+def cmd_dir(args):
+    ruta = args[0] if args else "."
+    try:
+        archivos = os.listdir(ruta)
+    except FileNotFoundError:
+        print("El directorio no existe.")
+        return
+
+    print(f"Contenido de {os.path.abspath(ruta)}:\n")
+    print(f"{'Fecha Mod':<20} {'Tamaño':>10} {'Nombre'}")
+    print("-" * 50)
+    for archivo in archivos:
+        ruta_completa = os.path.join(ruta, archivo)
+        info = os.stat(ruta_completa)
+        fecha = time.strftime("%d/%m/%Y %H:%M", time.localtime(info.st_mtime))
+        tamano = info.st_size
+        print(f"{fecha:<20} {tamano:>10} {archivo}")
+
+def cmd_cd(args):
+    if not args:
+        print(os.getcwd())
+        return
+    try:
+        os.chdir(args[0])
+    except FileNotFoundError:
+        print("Directorio no encontrado.")
+
+def cmd_cls(args):
+    os.system("clear")
+
+def cmd_del(args):
+    for archivo in args:
+        try:
+            os.remove(archivo)
+        except FileNotFoundError:
+            print(f"Archivo no encontrado: {archivo}")
+
+def cmd_copy(args):
+    if len(args) < 2:
+        print("Uso: copy origen destino")
+        return
+    try:
+        shutil.copy(args[0], args[1])
+    except FileNotFoundError:
+        print("Archivo origen no encontrado.")
+
+def cmd_move(args):
+    if len(args) < 2:
+        print("Uso: move origen destino")
+        return
+    try:
+        shutil.move(args[0], args[1])
+    except FileNotFoundError:
+        print("Archivo origen no encontrado.")
+
+def cmd_mkdir(args):
+    for carpeta in args:
+        try:
+            os.mkdir(carpeta)
+        except FileExistsError:
+            print(f"Carpeta ya existe: {carpeta}")
+
+def cmd_rmdir(args):
+    for carpeta in args:
+        try:
+            os.rmdir(carpeta)
+        except FileNotFoundError:
+            print(f"Carpeta no encontrada: {carpeta}")
+        except OSError:
+            print(f"No se puede borrar {carpeta}, no está vacía.")
+
+def cmd_type(args):
+    for archivo in args:
+        try:
+            with open(archivo, "r") as f:
+                print(f.read())
+        except FileNotFoundError:
+            print(f"Archivo no encontrado: {archivo}")
+
+def cmd_echo(args):
+    print(" ".join(args))
+
+# Diccionario de comandos
+cmd_map = {
+    "dir": cmd_dir,
+    "cd": cmd_cd,
+    "cls": cmd_cls,
+    "del": cmd_del,
+    "copy": cmd_copy,
+    "move": cmd_move,
+    "mkdir": cmd_mkdir,
+    "rmdir": cmd_rmdir,
+    "type": cmd_type,
+    "echo": cmd_echo,
+}
+
+# Bucle principal
+while True:
+    entrada = input("C:\\> ").strip()
+    if not entrada:
+        continue
+
+    partes = entrada.split()
+    cmd = partes[0].lower()
+    args = partes[1:]
+
+    if cmd in ["exit", "quit"]:
+        break
+    elif cmd in cmd_map:
+        cmd_map[cmd](args)
+    else:
+        print(f"'{cmd}' no se reconoce como un comando interno o externo.")
